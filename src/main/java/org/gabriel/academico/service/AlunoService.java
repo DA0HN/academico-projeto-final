@@ -12,10 +12,15 @@ import org.gabriel.academico.service.validator.PessoaValidator;
  */
 public class AlunoService {
 
-    private final AlunoDAO dao;
+    private AlunoDAO dao;
 
     public AlunoService() {
-        this.dao = new AlunoDAO(EntityManagerUtil.getEntityManager());
+        try {
+            this.dao = new AlunoDAO(EntityManagerUtil.getEntityManager());
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void save(Aluno aluno) {

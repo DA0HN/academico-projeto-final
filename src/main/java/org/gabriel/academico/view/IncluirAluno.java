@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.gabriel.academico.controller.AlunoController;
+import org.gabriel.academico.service.AlunoService;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class IncluirAluno extends Application {
             parent = view.load(new FileInputStream("src/main/resources/view/Aluno.fxml"));
             AlunoController controller = view.getController();
             controller.setPalcoOrigem(stage);
+            controller.setService(new AlunoService());
             stage.setScene(new Scene(parent));
             stage.setTitle("Incluir Curso");
             stage.setResizable(false);

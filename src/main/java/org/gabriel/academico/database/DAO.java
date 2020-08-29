@@ -12,7 +12,7 @@ import java.util.List;
 public class DAO<VO extends ValueObject> {
 
     public final Class<VO> valueObject;
-    private final EntityManager manager;
+    protected final EntityManager manager;
 
     public DAO(EntityManager manager) {
         this.manager = manager;
@@ -24,61 +24,109 @@ public class DAO<VO extends ValueObject> {
         this.valueObject = valueObject;
     }
 
-    public DAO<VO> begin() {
-        manager.getTransaction().begin();
+    public DAO<VO> begin() throws DatabaseException {
+        try {
+            manager.getTransaction().begin();
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao iniciar transação " + e.getMessage());
+        }
         return this;
     }
 
-    public DAO<VO> commit() {
-        manager.getTransaction().commit();
+    public DAO<VO> commit() throws DatabaseException {
+        try {
+            manager.getTransaction().commit();
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao confirmar a transação " + e.getMessage());
+        }
         return this;
     }
 
     public DAO<VO> undo() {
-        manager.getTransaction().rollback();
-        return this;
-    }
-
-    public VO findById(Integer id) {
-        return manager.find(valueObject, id);
-    }
-
-    public DAO<VO> save(VO vo) {
-        manager.persist(vo);
-        return this;
-    }
-
-    public DAO<VO> save(List<VO> vos) {
-        vos.forEach(this::save);
-        return this;
-    }
-
-    public DAO<VO> update(VO vo) {
-        manager.merge(vo);
-        return this;
-    }
-
-    public DAO<VO> delete(VO vo) {
-        manager.remove(vo);
-        return this;
-    }
-
-    public List<VO> findAll(int limit, int offset) {
-        if(valueObject == null || valueObject.equals(ValueObject.class)) {
-            throw new UnsupportedOperationException("Não é possível executar findAll()");
+        try {
+            manager.getTransaction().rollback();
         }
-        String query = "select vo from " + this.valueObject.getName() + " vo";
-        return manager.createQuery(query, valueObject)
-                .setMaxResults(limit)
-                .setFirstResult(offset)
-                .getResultList();
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        return this;
     }
 
-    public List<VO> findAll() {
+    public VO findById(Integer id) throws DatabaseException {
+        try {
+            return manager.find(valueObject, id);
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao tentar buscar por id " + e.getMessage());
+        }
+    }
+
+    public DAO<VO> save(VO vo) throws DatabaseException {
+        try {
+            manager.persist(vo);
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao inserir entidade " + e.getMessage());
+        }
+        return this;
+    }
+
+    public DAO<VO> save(List<VO> vos) throws DatabaseException {
+        for(VO vo : vos) {
+            save(vo);
+        }
+        return this;
+    }
+
+    public DAO<VO> update(VO vo) throws DatabaseException {
+        try {
+            manager.merge(vo);
+            return this;
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao tentar atualizar entidade " + e.getMessage());
+        }
+    }
+
+    public DAO<VO> delete(VO vo) throws DatabaseException {
+        try {
+            manager.remove(vo);
+            return this;
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao tentar deletar entidde " + e.getMessage());
+        }
+    }
+
+    public List<VO> findAll(int limit, int offset) throws DatabaseException {
+        try {
+            if(valueObject == null || valueObject.equals(ValueObject.class)) {
+                throw new UnsupportedOperationException("O tipo do objeto para a busca não foi " +
+                                                                "inserido VO = null");
+            }
+            String query = "select vo from " + this.valueObject.getName() + " vo";
+            return manager.createQuery(query, valueObject)
+                    .setMaxResults(limit)
+                    .setFirstResult(offset)
+                    .getResultList();
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao executar buscar todos " + e.getMessage());
+        }
+    }
+
+    public List<VO> findAll() throws DatabaseException {
         return findAll(10, 0);
     }
 
-    public void fechar() {
-        manager.close();
+    public void fechar() throws DatabaseException {
+        try {
+            manager.close();
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao fechar conexão " + e.getMessage());
+        }
     }
 }

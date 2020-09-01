@@ -1,7 +1,6 @@
 package org.gabriel.academico.service;
 
 import org.gabriel.academico.database.AlunoDAO;
-import org.gabriel.academico.database.DatabaseException;
 import org.gabriel.academico.database.EntityManagerUtil;
 import org.gabriel.academico.model.Aluno;
 import org.gabriel.academico.service.validator.PessoaValidator;
@@ -10,7 +9,7 @@ import org.gabriel.academico.service.validator.PessoaValidator;
  * @author daohn on 29/08/2020
  * @project EstudoDeCaso
  */
-public class AlunoService {
+public class AlunoService implements IService<Aluno, AlunoDAO> {
 
     private AlunoDAO dao;
 
@@ -23,20 +22,11 @@ public class AlunoService {
         }
     }
 
-    public void save(Aluno aluno) {
-        var mensagemErros = this.validarDados(aluno);
-        if(!mensagemErros.isEmpty()) throw new ServiceException();
-        try {
-            dao.begin();
-            dao.save(aluno);
-            dao.commit();
-        }
-        catch(DatabaseException e) {
-            dao.undo();
-        }
+    @Override public AlunoDAO getDAO() {
+        return dao;
     }
 
-    private String validarDados(Aluno aluno) {
+    @Override public String validarDados(Aluno aluno) {
         var erro = new PessoaValidator().validarPessoa(aluno);
         if(aluno.getCursos() == null || aluno.getCursos().isEmpty()) {
             erro.add("Para inserir um aluno é necessário estar " +
@@ -45,7 +35,7 @@ public class AlunoService {
         if(aluno.getMatricula() == null) {
             erro.add("Para inserir um aluno é necessário uma matricula.");
         }
-        if(aluno.getMatricula() > 99) {
+        if(aluno.getMatricula() < 100) {
             erro.add("Para inserir um aluno a matricula precisa ter pelo menos 3 caracteres");
         }
         return erro.toString();

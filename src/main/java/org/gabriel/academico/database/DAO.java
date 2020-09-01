@@ -9,22 +9,22 @@ import java.util.List;
  * @author daohn on 30/07/2020
  * @project ExercicioMapeamentoJPA
  */
-public class DAO<VO extends ValueObject> {
+public class DAO<VO extends ValueObject> implements IDAO<VO>{
 
-    public final Class<VO> valueObject;
+    public final    Class<VO>     valueObject;
     protected final EntityManager manager;
 
     public DAO(EntityManager manager) {
-        this.manager = manager;
+        this.manager     = manager;
         this.valueObject = (Class<VO>) ValueObject.class;
     }
 
     DAO(EntityManager manager, Class<VO> valueObject) {
-        this.manager = manager;
+        this.manager     = manager;
         this.valueObject = valueObject;
     }
 
-    public DAO<VO> begin() throws DatabaseException {
+    @Override public DAO<VO> begin() throws DatabaseException {
         try {
             manager.getTransaction().begin();
         }
@@ -34,17 +34,18 @@ public class DAO<VO extends ValueObject> {
         return this;
     }
 
-    public DAO<VO> commit() throws DatabaseException {
+    @Override public DAO<VO> commit() throws DatabaseException {
         try {
             manager.getTransaction().commit();
         }
         catch(Exception e) {
+            e.printStackTrace();
             throw new DatabaseException("Erro ao confirmar a transação " + e.getMessage());
         }
         return this;
     }
 
-    public DAO<VO> undo() {
+    @Override public DAO<VO> undo() {
         try {
             manager.getTransaction().rollback();
         }
@@ -54,7 +55,7 @@ public class DAO<VO extends ValueObject> {
         return this;
     }
 
-    public VO findById(Integer id) throws DatabaseException {
+    @Override public VO findById(Integer id) throws DatabaseException {
         try {
             return manager.find(valueObject, id);
         }
@@ -63,7 +64,14 @@ public class DAO<VO extends ValueObject> {
         }
     }
 
-    public DAO<VO> save(VO vo) throws DatabaseException {
+    @Override public DAO<VO> save(List<VO> vos) throws DatabaseException {
+        for(VO vo : vos) {
+            save(vo);
+        }
+        return this;
+    }
+
+    @Override public DAO<VO> save(VO vo) throws DatabaseException {
         try {
             manager.persist(vo);
         }
@@ -73,14 +81,7 @@ public class DAO<VO extends ValueObject> {
         return this;
     }
 
-    public DAO<VO> save(List<VO> vos) throws DatabaseException {
-        for(VO vo : vos) {
-            save(vo);
-        }
-        return this;
-    }
-
-    public DAO<VO> update(VO vo) throws DatabaseException {
+    @Override public DAO<VO> update(VO vo) throws DatabaseException {
         try {
             manager.merge(vo);
             return this;
@@ -90,7 +91,7 @@ public class DAO<VO extends ValueObject> {
         }
     }
 
-    public DAO<VO> delete(VO vo) throws DatabaseException {
+    @Override public DAO<VO> delete(VO vo) throws DatabaseException {
         try {
             manager.remove(vo);
             return this;
@@ -100,7 +101,11 @@ public class DAO<VO extends ValueObject> {
         }
     }
 
-    public List<VO> findAll(int limit, int offset) throws DatabaseException {
+    @Override public List<VO> findAll() throws DatabaseException {
+        return findAll(10, 0);
+    }
+
+    @Override public List<VO> findAll(int limit, int offset) throws DatabaseException {
         try {
             if(valueObject == null || valueObject.equals(ValueObject.class)) {
                 throw new UnsupportedOperationException("O tipo do objeto para a busca não foi " +
@@ -117,11 +122,7 @@ public class DAO<VO extends ValueObject> {
         }
     }
 
-    public List<VO> findAll() throws DatabaseException {
-        return findAll(10, 0);
-    }
-
-    public void fechar() throws DatabaseException {
+    @Override public void fechar() throws DatabaseException {
         try {
             manager.close();
         }

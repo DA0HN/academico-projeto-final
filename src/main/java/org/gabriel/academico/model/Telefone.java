@@ -1,5 +1,6 @@
 package org.gabriel.academico.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,10 +18,16 @@ import javax.persistence.Enumerated;
  * @project EstudoDeCaso
  */
 @Embeddable @NoArgsConstructor @Getter
-@RequiredArgsConstructor @ToString @EqualsAndHashCode
+@ToString @EqualsAndHashCode
 public class Telefone implements ValueObject {
     @NonNull  @Setter
     private String numero;
     @NonNull @Setter @Enumerated
     private TipoTelefone tipo;
+
+    @Builder
+    public Telefone(String numero, TipoTelefone tipo) {
+        this.numero = numero;
+        this.tipo = tipo;
+    }
 }

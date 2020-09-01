@@ -18,7 +18,7 @@ public class ProfessorService {
         this.dao = new ProfessorDAO(EntityManagerUtil.getEntityManager());
     }
 
-    public void save(Professor professor) {
+    public void save(Professor professor) throws ServiceException {
         var mensagemErros = this.validarDados(professor);
         if(!mensagemErros.isEmpty()) throw new ServiceException();
         try {

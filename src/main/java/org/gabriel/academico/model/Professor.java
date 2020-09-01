@@ -1,11 +1,13 @@
 package org.gabriel.academico.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.gabriel.academico.model.enums.Sexo;
 import org.gabriel.academico.model.enums.Titulacao;
 
 import javax.persistence.CascadeType;
@@ -16,6 +18,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +29,7 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor @Getter
-@RequiredArgsConstructor @ToString
+@ToString
 public class Professor extends Pessoa implements ValueObject {
 
     @Setter @NonNull
@@ -38,4 +41,27 @@ public class Professor extends Pessoa implements ValueObject {
                inverseJoinColumns = {@JoinColumn(name = "curso_id")})
     private final List<Curso> cursos = new ArrayList<>();
 
+    @Builder
+    public Professor(String formacao, Titulacao titulacao, String nome, LocalDate dataNascimento,
+                     Sexo sexo,
+                     Endereco endereco) {
+        super(nome, dataNascimento, sexo, endereco);
+        this.formacao = formacao;
+        this.titulacao = titulacao;
+    }
+
+    public void addCurso(Curso curso) {
+        this.cursos.add(curso);
+        if(curso.getProfessores().contains(this)) return;
+        curso.addProfessor(this);
+    }
+
+    public void addCursos(List<Curso> cursos) {
+        cursos.forEach(this::addCurso);
+    }
+
+    public void removeCurso(Curso curso) {
+        curso.getProfessores().remove(this);
+        this.cursos.remove(curso);
+    }
 }

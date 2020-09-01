@@ -16,7 +16,7 @@ public class PessoaValidator {
         if(pessoa.getDataNascimento() == null) {
             erro.add("Para inserir uma pessoa é necessário uma data de nascimento.");
         }
-        if(pessoa.getDataNascimento().isBefore(LocalDate.now()) || pessoa.getDataNascimento().isEqual(
+        if(pessoa.getDataNascimento().isAfter(LocalDate.now()) || pessoa.getDataNascimento().isEqual(
                 LocalDate.now())) {
             erro.add("Para inserir uma pessoa a data de nascimento tem que ser anterior ao dia " +
                              "atual");

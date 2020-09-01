@@ -1,5 +1,6 @@
 package org.gabriel.academico.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ import javax.persistence.Id;
  * @project EstudoDeCaso
  */
 @Entity @NoArgsConstructor @Getter
-@RequiredArgsConstructor @ToString @EqualsAndHashCode
+@ToString @EqualsAndHashCode
 public class Estado implements ValueObject {
 
     @Id
@@ -28,4 +29,10 @@ public class Estado implements ValueObject {
     private String nome;
     @NonNull @Setter
     private String sigla;
+
+    @Builder
+    public Estado(String nome, String sigla) {
+        this.nome = nome;
+        this.sigla = sigla;
+    }
 }

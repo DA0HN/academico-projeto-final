@@ -1,5 +1,6 @@
 package org.gabriel.academico.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,9 +10,11 @@ import lombok.Setter;
 import lombok.ToString;
 import org.gabriel.academico.model.enums.TipoLogradouro;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 
 /**
@@ -19,7 +22,7 @@ import javax.persistence.ManyToOne;
  * @project EstudoDeCaso
  */
 @Embeddable @NoArgsConstructor @Getter
-@RequiredArgsConstructor @ToString @EqualsAndHashCode
+@ToString @EqualsAndHashCode
 public class Endereco {
     @NonNull @Setter
     private String logradouro;
@@ -29,6 +32,16 @@ public class Endereco {
     private Integer numero;
     @NonNull @Setter
     private String bairro;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private Municipio municipio;
+
+    @Builder
+    public Endereco(String logradouro, TipoLogradouro tipoLogradouro, Integer numero,
+                    String bairro, Municipio municipio) {
+        this.logradouro = logradouro;
+        this.tipoLogradouro = tipoLogradouro;
+        this.numero = numero;
+        this.bairro = bairro;
+        this.municipio = municipio;
+    }
 }

@@ -22,7 +22,7 @@ public class IncluirAluno extends Application {
             var view = new FXMLLoader();
             parent = view.load(new FileInputStream("src/main/resources/view/Aluno.fxml"));
             AlunoController controller = view.getController();
-            controller.setPalcoOrigem(stage);
+            controller.setStage(stage);
             controller.setService(new AlunoService());
             stage.setScene(new Scene(parent));
             stage.setTitle("Incluir Curso");

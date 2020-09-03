@@ -8,8 +8,8 @@ import javax.persistence.EntityManager;
  * @author daohn on 01/09/2020
  * @project EstudoDeCaso
  */
-public class CursoDAO extends DAO<Curso> {
+public class CursoDAO extends AbstractDAO<Curso> {
     public CursoDAO(EntityManager manager) {
-        super(manager);
+        super(manager, Curso.class);
     }
 }

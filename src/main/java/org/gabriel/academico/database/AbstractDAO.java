@@ -9,22 +9,22 @@ import java.util.List;
  * @author daohn on 30/07/2020
  * @project ExercicioMapeamentoJPA
  */
-public class DAO<VO extends ValueObject> implements IDAO<VO>{
+public class AbstractDAO<VO> {
 
     public final    Class<VO>     valueObject;
     protected final EntityManager manager;
 
-    public DAO(EntityManager manager) {
-        this.manager     = manager;
+    public AbstractDAO() {
+        this.manager     = EntityManagerUtil.getEntityManager();
         this.valueObject = (Class<VO>) ValueObject.class;
     }
 
-    DAO(EntityManager manager, Class<VO> valueObject) {
+    public AbstractDAO(EntityManager manager, Class<VO> valueObject) {
         this.manager     = manager;
         this.valueObject = valueObject;
     }
 
-    @Override public DAO<VO> begin() throws DatabaseException {
+    public AbstractDAO<VO> begin() throws DatabaseException {
         try {
             manager.getTransaction().begin();
         }
@@ -34,7 +34,7 @@ public class DAO<VO extends ValueObject> implements IDAO<VO>{
         return this;
     }
 
-    @Override public DAO<VO> commit() throws DatabaseException {
+    public AbstractDAO<VO> commit() throws DatabaseException {
         try {
             manager.getTransaction().commit();
         }
@@ -45,7 +45,7 @@ public class DAO<VO extends ValueObject> implements IDAO<VO>{
         return this;
     }
 
-    @Override public DAO<VO> undo() {
+    public AbstractDAO<VO> undo() {
         try {
             manager.getTransaction().rollback();
         }
@@ -55,7 +55,7 @@ public class DAO<VO extends ValueObject> implements IDAO<VO>{
         return this;
     }
 
-    @Override public VO findById(Integer id) throws DatabaseException {
+    public VO findById(Integer id) throws DatabaseException {
         try {
             return manager.find(valueObject, id);
         }
@@ -64,14 +64,7 @@ public class DAO<VO extends ValueObject> implements IDAO<VO>{
         }
     }
 
-    @Override public DAO<VO> save(List<VO> vos) throws DatabaseException {
-        for(VO vo : vos) {
-            save(vo);
-        }
-        return this;
-    }
-
-    @Override public DAO<VO> save(VO vo) throws DatabaseException {
+    public AbstractDAO<VO> save(VO vo) throws DatabaseException {
         try {
             manager.persist(vo);
         }
@@ -81,7 +74,14 @@ public class DAO<VO extends ValueObject> implements IDAO<VO>{
         return this;
     }
 
-    @Override public DAO<VO> update(VO vo) throws DatabaseException {
+    public AbstractDAO<VO> save(List<VO> vos) throws DatabaseException {
+        for(VO vo : vos) {
+            save(vo);
+        }
+        return this;
+    }
+
+    public AbstractDAO<VO> update(VO vo) throws DatabaseException {
         try {
             manager.merge(vo);
             return this;
@@ -91,7 +91,7 @@ public class DAO<VO extends ValueObject> implements IDAO<VO>{
         }
     }
 
-    @Override public DAO<VO> delete(VO vo) throws DatabaseException {
+    public AbstractDAO<VO> delete(VO vo) throws DatabaseException {
         try {
             manager.remove(vo);
             return this;
@@ -101,33 +101,29 @@ public class DAO<VO extends ValueObject> implements IDAO<VO>{
         }
     }
 
-    @Override public List<VO> findAll() throws DatabaseException {
-        return findAll(10, 0);
-    }
-
-    @Override public List<VO> findAll(int limit, int offset) throws DatabaseException {
-        try {
-            if(valueObject == null || valueObject.equals(ValueObject.class)) {
-                throw new UnsupportedOperationException("O tipo do objeto para a busca não foi " +
-                                                                "inserido VO = null");
-            }
-            String query = "select vo from " + this.valueObject.getName() + " vo";
-            return manager.createQuery(query, valueObject)
-                    .setMaxResults(limit)
-                    .setFirstResult(offset)
-                    .getResultList();
-        }
-        catch(Exception e) {
-            throw new DatabaseException("Erro ao executar buscar todos " + e.getMessage());
-        }
-    }
-
-    @Override public void fechar() throws DatabaseException {
+    public void fechar() throws DatabaseException {
         try {
             manager.close();
         }
         catch(Exception e) {
             throw new DatabaseException("Erro ao fechar conexão " + e.getMessage());
+        }
+    }
+
+    public List<VO> findAll() throws DatabaseException {
+        try {
+            if(valueObject == null) {
+                throw new UnsupportedOperationException("O tipo do objeto para a busca não foi " +
+                                                                "inserido VO = null");
+            }
+            String query = "select vo from " + valueObject.getName() + " vo";
+            System.out.println(query);
+            return manager
+                    .createQuery(query, valueObject)
+                    .getResultList();
+        }
+        catch(Exception e) {
+            throw new DatabaseException("Erro ao executar buscar todos " + e.getMessage());
         }
     }
 }

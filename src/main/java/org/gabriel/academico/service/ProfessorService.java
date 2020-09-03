@@ -1,6 +1,5 @@
 package org.gabriel.academico.service;
 
-import org.gabriel.academico.database.DatabaseException;
 import org.gabriel.academico.database.EntityManagerUtil;
 import org.gabriel.academico.database.ProfessorDAO;
 import org.gabriel.academico.model.Professor;
@@ -10,7 +9,7 @@ import org.gabriel.academico.service.validator.PessoaValidator;
  * @author daohn on 29/08/2020
  * @project EstudoDeCaso
  */
-public class ProfessorService {
+public class ProfessorService implements IService<Professor, ProfessorDAO>{
 
     private final ProfessorDAO dao;
 
@@ -18,20 +17,7 @@ public class ProfessorService {
         this.dao = new ProfessorDAO(EntityManagerUtil.getEntityManager());
     }
 
-    public void save(Professor professor) throws ServiceException {
-        var mensagemErros = this.validarDados(professor);
-        if(!mensagemErros.isEmpty()) throw new ServiceException();
-        try {
-            dao.begin();
-            dao.save(professor);
-            dao.commit();
-        }
-        catch(DatabaseException e) {
-            dao.undo();
-        }
-    }
-
-    private String validarDados(Professor professor) {
+    @Override public String validarDados(Professor professor) {
         var erro = new PessoaValidator().validarPessoa(professor);
         if(professor.getCursos() == null || professor.getCursos().isEmpty()) {
             erro.add("Para inserir um professor é necessário estar " +
@@ -44,5 +30,9 @@ public class ProfessorService {
             erro.add("Para inserir um professor é necessário uma formação");
         }
         return erro.toString();
+    }
+
+    @Override public ProfessorDAO getDAO() {
+        return this.dao;
     }
 }

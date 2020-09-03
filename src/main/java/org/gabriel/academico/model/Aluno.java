@@ -24,10 +24,10 @@ import java.util.List;
  */
 
 @Entity @NoArgsConstructor
-@Getter @ToString
+@Getter @ToString(exclude = {"cursos"})
 public class Aluno extends Pessoa implements ValueObject {
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "aluno_curso", joinColumns = {@JoinColumn(name = "aluno_id")},
                inverseJoinColumns = {@JoinColumn(name = "curso_id")})
     private final List<Curso> cursos = new ArrayList<>();

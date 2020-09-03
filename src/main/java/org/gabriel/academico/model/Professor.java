@@ -29,14 +29,14 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor @Getter
-@ToString
+@ToString(exclude = {"cursos"})
 public class Professor extends Pessoa implements ValueObject {
 
     @Setter @NonNull
     private String formacao;
     @Setter @NonNull @Enumerated(value = EnumType.STRING)
     private Titulacao titulacao;
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "professor_curso", joinColumns = {@JoinColumn(name = "professor_id")},
                inverseJoinColumns = {@JoinColumn(name = "curso_id")})
     private final List<Curso> cursos = new ArrayList<>();

@@ -2,6 +2,7 @@ package org.gabriel.academico.database;
 
 import org.gabriel.academico.model.Aluno;
 import org.gabriel.academico.model.Curso;
+import org.gabriel.academico.model.ValueObject;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -11,10 +12,10 @@ import java.util.List;
  * @author daohn on 29/08/2020
  * @project EstudoDeCaso
  */
-public class AlunoDAO extends DAO<Aluno>{
+public class AlunoDAO extends AbstractDAO<Aluno> {
 
     public AlunoDAO(EntityManager manager) {
-        super(manager);
+        super(manager, Aluno.class);
     }
 
     public List<Aluno> buscarPorNome(String nome) throws DatabaseException {

@@ -8,22 +8,29 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import org.gabriel.academico.app.Academico;
 import org.gabriel.academico.controller.util.MensagemUtil;
 import org.gabriel.academico.model.Aluno;
 import org.gabriel.academico.model.Curso;
 import org.gabriel.academico.model.Endereco;
+import org.gabriel.academico.model.Estado;
+import org.gabriel.academico.model.Municipio;
+import org.gabriel.academico.model.Telefone;
 import org.gabriel.academico.model.enums.Sexo;
+import org.gabriel.academico.model.enums.TipoLogradouro;
+import org.gabriel.academico.model.enums.TipoTelefone;
 import org.gabriel.academico.service.AlunoService;
 import org.gabriel.academico.service.CursoService;
+import org.gabriel.academico.service.EstadoService;
+import org.gabriel.academico.service.MunicipioService;
 import org.gabriel.academico.service.ServiceException;
 
 import java.net.URL;
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -33,86 +40,215 @@ import java.util.ResourceBundle;
  */
 public class AlunoController implements Initializable {
 
-    private final CursoService cursoService;
-    private List<Curso> cursos;
+    private final CursoService     cursoService;
+    private final EstadoService    estadoService;
+    private final MunicipioService municipioService;
+
+    // Listas para popular Combo Box
+    private List<Curso>     cursos;
+    private List<Estado>    estados;
+    private List<Municipio> municipios;
 
     private AlunoService service;
-    private Stage stage;
+    private Stage        stage;
 
     // Ação
-    @FXML private Button botaoSalvar;
-    @FXML private Button botaoSair;
-    @FXML private Button botaoIncluir;
+    @FXML private Button     botaoSalvar;
+    @FXML private Button     botaoSair;
+    @FXML private Button     botaoIncluir;
     // Status para usuário
-    @FXML private Label labelRodape;
+    @FXML private Label      labelRodape;
     @FXML private AnchorPane painelRodape;
-    @FXML private GridPane gridCampos;
+    @FXML private GridPane   gridCampos;
 
-    // Dados do usuário
-    @FXML private ComboBox<Endereco> comboBoxEndereco;
-    @FXML private ComboBox<Curso> comboBoxCurso;
-    @FXML private ComboBox<Sexo> comboBoxSexo;
-    @FXML private DatePicker datePicker;
-    @FXML private TextField campoNome;
-    @FXML private TextField campoMatricula;
+    // Bloco de inserção de telefone
+    @FXML private ListView<Telefone>     listTelefonesInseridos;
+    @FXML private ComboBox<TipoTelefone> comboTipoTelefone;
+    @FXML private AnchorPane             paneTelefone;
+    @FXML private Button                 botaoAdicionarTelefone;
+
+    // Bloco de inserção de curso
+    @FXML private ComboBox<Curso> comboCurso;
+    @FXML private ListView<Curso> listCursosInseridos;
+    @FXML private Button          botaoAdicionarCurso;
+    @FXML private AnchorPane      paneCurso;
+
+
+    @FXML private DatePicker               datePicker;
+    @FXML private ComboBox<Estado>         comboEstado;
+    @FXML private ComboBox<Sexo>           comboSexo;
+    @FXML private ComboBox<Municipio>      comboMunicipio;
+    @FXML private ComboBox<TipoLogradouro> comboTipoLogradouro;
+    @FXML private TextField                fieldNome;
+    @FXML private TextField                fieldNumero;
+    @FXML private TextField                fieldLogradouro;
+    @FXML private TextField                fieldTelefone;
+    @FXML private TextField                fieldBairro;
+    @FXML private TextField                fieldMatricula;
+
 
     public AlunoController() {
-        this.cursoService = new CursoService();
+        this.cursoService     = new CursoService();
+        this.estadoService    = new EstadoService();
+        this.municipioService = new MunicipioService();
     }
+
     public void setStage(Stage stage) {
         this.stage = stage;
     }
+
     public void setService(AlunoService service) {
         this.service = service;
     }
 
     @Override public void initialize(URL url, ResourceBundle resourceBundle) {
+        initialState();
+    }
+
+    private void initialState() {
+        // Desativa o grid até o botão de salvar sofrer alteração
         this.gridCampos.setDisable(true);
+        // Estado do botão incluir e botão salvar, alternam entre si
         this.botaoIncluir.setDisable(false);
         this.botaoSalvar.setDisable(true);
 
-        inicializarComboBox();
+        // Combo municipio é ativada quando a combo Estado é selecionada
+        this.comboMunicipio.setVisible(false);
+        this.comboMunicipio.setDisable(true);
+        // Inicia o bloco de inserção de telefone
+        this.paneTelefone.setDisable(true);
+        this.listTelefonesInseridos.setVisible(false);
+        // Inicia o bloco de inserção de curso
+        this.paneCurso.setDisable(true);
+        this.listCursosInseridos.setVisible(false);
+        this.initPrompt();
     }
 
-    private void inicializarComboBox() {
-        this.comboBoxCurso.setItems(FXCollections.observableArrayList(this.cursos));
-        this.comboBoxSexo.setItems(FXCollections.observableArrayList(Sexo.values()));
+    private void resetState() {
+
+        // Altera os estados dos botões
+        this.botaoIncluir.setDisable(false);
+        this.botaoSalvar.setDisable(true);
+        // Desabilita grid
+        this.gridCampos.setDisable(true);
+
+        this.comboCurso.getItems().clear();
+        this.comboSexo.getItems().clear();
+        this.comboTipoTelefone.getItems().clear();
+        this.comboEstado.getItems().clear();
+        this.comboMunicipio.getItems().clear();
+        this.comboTipoLogradouro.getItems().clear();
+
+        this.fieldMatricula.clear();
+        this.fieldLogradouro.clear();
+        this.fieldNome.clear();
+        this.fieldTelefone.clear();
+        this.fieldNumero.clear();
+
+        // Volta a combo Municipio para o estado inicial
+        this.comboMunicipio.setVisible(false);
+        this.comboMunicipio.setDisable(true);
+
+        // Volta o pane de telefone para o estado inicial
+        this.paneTelefone.setDisable(true);
+        this.listTelefonesInseridos.getItems().clear();
+        this.listTelefonesInseridos.setVisible(false);
+
+        // Volta o pane de curso para o estado inicial
+        this.paneCurso.setDisable(true);
+        this.listCursosInseridos.getItems().clear();
+        this.listCursosInseridos.setVisible(false);
+
+        this.comboEstado.getSelectionModel().clearSelection();
+        this.comboCurso.getSelectionModel().clearSelection();
+    }
+
+    private void initPrompt() {
+        this.comboSexo.setPromptText("Selecione o sexo");
+        this.comboTipoLogradouro.setPromptText("Tipo do logradouro");
+        this.comboCurso.setPromptText("Selecione o curso");
+        this.comboEstado.setPromptText("Selecione o estado");
+        this.comboTipoTelefone.setPromptText("Tipo do telefone");
+    }
+
+    private void initializeComboBox() {
+        try {
+            this.cursos  = this.cursoService.buscarTodos();
+            this.estados = this.estadoService.buscarTodos();
+            this.comboCurso
+                    .setItems(FXCollections.observableArrayList(this.cursos));
+            this.comboSexo
+                    .setItems(FXCollections.observableArrayList(Sexo.values()));
+            this.comboTipoTelefone
+                    .setItems(FXCollections.observableArrayList(TipoTelefone.values()));
+            this.comboEstado
+                    .setItems(FXCollections.observableArrayList(this.estados));
+            this.comboTipoLogradouro
+                    .setItems(FXCollections.observableArrayList(TipoLogradouro.values()));
+            initPrompt();
+        }
+        catch(ServiceException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
     }
 
     private void iniciarInclusao() {
+        initializeComboBox();
+
+        // Alterna os estados dos botões Incluir/Salvar
         this.botaoIncluir.setDisable(true);
         this.botaoSalvar.setDisable(false);
-        this.campoNome.clear();
-        this.gridCampos.setDisable(false);
-        this.campoNome.requestFocus();
+
+        this.fieldMatricula.requestFocus();
+        // Altera status do rodapé
         this.labelRodape.setText("Inclusão em andamento...");
+        // Ativa o bloco grid
+        this.gridCampos.setDisable(false);
+        // Ativa o bloco do telefone
+        this.paneTelefone.setDisable(false);
+        // Ativa o bloco de curso
+        this.paneCurso.setDisable(false);
+
+        initPrompt();
+    }
+
+    private Aluno createAluno() {
+        var aluno = new Aluno();
+        aluno.setMatricula(Integer.valueOf(this.fieldMatricula.getText()));
+        aluno.setDataNascimento(this.datePicker.getValue());
+        aluno.setNome(this.fieldNome.getText());
+        aluno.setSexo(this.comboSexo.getValue());
+        var endereco = new Endereco(this.fieldLogradouro.getText(),
+                                    this.comboTipoLogradouro.getValue(),
+                                    Integer.parseInt(this.fieldNumero.getText()),
+                                    this.fieldBairro.getText(),
+                                    this.comboMunicipio.getValue()
+        );
+        aluno.setEndereco(endereco);
+        aluno.addCursos(listCursosInseridos.getItems());
+        aluno.addTelefones(listTelefonesInseridos.getItems());
+        return aluno;
     }
 
     private void processarInclusao() {
-        var aluno = new Aluno();
-        aluno.setMatricula(Integer.valueOf(this.campoMatricula.getText()));
-        aluno.setDataNascimento(this.datePicker.getValue());
-        aluno.setNome(this.campoNome.getText());
-        aluno.setSexo(this.comboBoxSexo.getValue());
-        aluno.setEndereco(this.comboBoxEndereco.getValue());
-
+        var aluno = createAluno();
         try {
             this.service.save(aluno);
-            this.botaoIncluir.setDisable(false);
-            this.botaoSalvar.setDisable(true);
-            this.gridCampos.setDisable(true);
+            resetState();
+            MensagemUtil.mensagemInformacao("Aluno " + aluno.getNome() + " foi salvo com sucesso.");
             this.labelRodape.setText("Inclusão realizada com sucesso!");
         }
         catch(ServiceException e) {
             MensagemUtil.mensagemErro(e.getMessage());
             this.botaoIncluir.setDisable(true);
             this.botaoSalvar.setDisable(false);
-            this.campoNome.requestFocus();
+            this.fieldMatricula.requestFocus();
         }
     }
 
     private void sair() {
-        this.stage.close();
+        new Academico().start(stage);
     }
 
     @FXML public void botaoIncluirAction(ActionEvent actionEvent) {
@@ -125,5 +261,43 @@ public class AlunoController implements Initializable {
 
     @FXML public void botaoSalvarAction(ActionEvent actionEvent) {
         this.processarInclusao();
+        this.sair();
+    }
+
+
+    @FXML public void comboEstadoChange(ActionEvent actionEvent) {
+        try {
+            Estado selectedItem = this.comboEstado.getValue();
+            if(selectedItem != null) {
+                var municipios = municipioService.findByEstado(selectedItem);
+                comboMunicipio.setItems(FXCollections.observableArrayList(municipios));
+                comboMunicipio.setVisible(true);
+                comboMunicipio.setDisable(false);
+            }
+        }
+        catch(ServiceException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML public void adicionarCursoOnAction(ActionEvent actionEvent) {
+        var curso = comboCurso.getValue();
+        if(curso != null && !this.listCursosInseridos.getItems().contains(curso)) {
+            // Ativa a visibilidade da combo de telefones
+            this.listCursosInseridos.setVisible(true);
+            this.listCursosInseridos.getItems().add(curso);
+        }
+    }
+
+    @FXML public void adicionarTelefoneOnAction(ActionEvent actionEvent) {
+        var numero = fieldTelefone.getText();
+        var tipo = comboTipoTelefone.getValue();
+        var telefone = new Telefone(numero, tipo);
+        if(numero != null && tipo != null && !this.listTelefonesInseridos.getItems().contains(
+                telefone)) {
+            this.listTelefonesInseridos.getItems().add(telefone);
+            // Ativa a visibilidade da combo de telefones
+            this.listTelefonesInseridos.setVisible(true);
+        }
     }
 }

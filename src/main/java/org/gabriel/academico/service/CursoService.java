@@ -1,6 +1,7 @@
 package org.gabriel.academico.service;
 
 import org.gabriel.academico.database.CursoDAO;
+import org.gabriel.academico.database.EntityManagerUtil;
 import org.gabriel.academico.model.Curso;
 
 /**
@@ -8,13 +9,20 @@ import org.gabriel.academico.model.Curso;
  * @project EstudoDeCaso
  */
 public class CursoService implements IService<Curso, CursoDAO> {
+
+    private final CursoDAO dao;
+
+    public CursoService() {
+        this.dao = new CursoDAO(EntityManagerUtil.getEntityManager());
+    }
+
     @Override public CursoDAO getDAO() {
-        // TODO (daohn, 01/09/2020): Método gerado automaticamente
-        return null;
+        return this.dao;
     }
 
     @Override public String validarDados(Curso obj) {
-        // TODO (daohn, 01/09/2020): Método gerado automaticamente
         return null;
     }
+
+
 }

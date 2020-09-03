@@ -11,6 +11,10 @@ module EstudoDeCaso {
     // PostgreSQL / JPA
     requires java.sql;
     requires java.persistence;
+    requires java.base;
+
+    requires com.jfoenix;
+
 
     opens org.gabriel.academico.controller;
     opens org.gabriel.academico.model;

@@ -32,7 +32,7 @@ public class Endereco {
     private Integer numero;
     @NonNull @Setter
     private String bairro;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Municipio municipio;
 
     @Builder

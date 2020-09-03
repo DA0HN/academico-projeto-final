@@ -5,4 +5,5 @@ package org.gabriel.academico.model;
  * @project EstudoDeCaso
  */
 public interface ValueObject {
+    Integer getId();
 }

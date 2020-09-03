@@ -1,7 +1,7 @@
 package org.gabriel.academico.service;
 
+import org.gabriel.academico.database.AbstractDAO;
 import org.gabriel.academico.database.DatabaseException;
-import org.gabriel.academico.database.IDAO;
 import org.gabriel.academico.model.ValueObject;
 
 import java.util.List;
@@ -10,25 +10,37 @@ import java.util.List;
  * @author daohn on 01/09/2020
  * @project EstudoDeCaso
  */
-interface IService<E extends ValueObject, D extends IDAO<E>> {
+interface IService<VO extends ValueObject, DAO extends AbstractDAO<VO>> {
 
-    default void save(E obj) throws ServiceException {
+    String validarDados(VO obj);
+    DAO getDAO();
+
+    default void save(VO obj) throws ServiceException {
         var mensagemErros = this.validarDados(obj);
         if(!mensagemErros.isEmpty()) throw new ServiceException("Erro: \n" + mensagemErros);
         try {
-            getDAO().begin();
-            getDAO().save(obj);
-            getDAO().commit();
+            if(obj.getId() != null) {
+                getDAO().begin();
+                getDAO().update(obj);
+                getDAO().commit();
+            } else {
+                getDAO().begin();
+                getDAO().save(obj);
+                getDAO().commit();
+            }
         }
         catch(DatabaseException e) {
-            getDAO().undo();
-            e.printStackTrace();
-            throw new ServiceException("Não foi possível realizar inclusão " + e.getMessage());
+            cancelTransaction("Não foi possível realizar inclusão - " + e.getMessage());
         }
     }
-    String validarDados(E obj);
-    D getDAO();
-    default void alterar(E obj) throws ServiceException {
+
+    default void saveAll(List<VO> objs) throws ServiceException {
+        for(VO obj : objs) {
+            save(obj);
+        }
+    }
+
+    default void alterar(VO obj) throws ServiceException {
         String mensagemErros = this.validarDados(obj);
         if(!mensagemErros.isEmpty()) throw new ServiceException(mensagemErros);
         try {
@@ -50,7 +62,7 @@ interface IService<E extends ValueObject, D extends IDAO<E>> {
                     "Erro ao tentar cancelar a transação - " + exception.getMessage());
         }
     }
-    default void excluir(E obj) throws ServiceException {
+    default void excluir(VO obj) throws ServiceException {
         try {
             getDAO().begin();
             getDAO().delete(obj);
@@ -60,8 +72,8 @@ interface IService<E extends ValueObject, D extends IDAO<E>> {
             cancelTransaction("Erro ao excluir o aluno - " + e.getMessage());
         }
     }
-    default List<E> buscarTodos() throws ServiceException {
-        List<E> all = null;
+    default List<VO> buscarTodos() throws ServiceException {
+        List<VO> all = null;
         try {
             getDAO().begin();
             all = getDAO().findAll();

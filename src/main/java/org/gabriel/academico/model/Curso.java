@@ -5,15 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import org.gabriel.academico.model.enums.TipoCurso;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -26,7 +25,7 @@ import java.util.List;
  * @project EstudoDeCaso
  */
 @Entity @NoArgsConstructor @Getter
-@ToString @EqualsAndHashCode
+@EqualsAndHashCode
 public class Curso implements ValueObject {
 
     @Id
@@ -36,9 +35,9 @@ public class Curso implements ValueObject {
     private String nome;
     @NonNull @Setter @Enumerated(value = EnumType.STRING)
     private TipoCurso tipo;
-    @ManyToMany(mappedBy = "cursos", cascade = CascadeType.PERSIST)
+    @ManyToMany(mappedBy = "cursos", fetch = FetchType.LAZY)
     private final List<Professor> professores = new ArrayList<>();
-    @ManyToMany(mappedBy = "cursos", cascade = CascadeType.PERSIST)
+    @ManyToMany(mappedBy = "cursos", fetch = FetchType.LAZY)
     private final List<Aluno> alunos = new ArrayList<>();
 
     @Builder
@@ -75,5 +74,9 @@ public class Curso implements ValueObject {
 
     public void addAlunos(List<Aluno> alunos) {
         alunos.forEach(this::addAluno);
+    }
+
+    @Override public String toString() {
+        return nome;
     }
 }

@@ -10,7 +10,7 @@ import org.gabriel.academico.model.Estado;
  */
 public class EstadoService implements IService<Estado, EstadoDAO>{
 
-    private EstadoDAO dao;
+    private final EstadoDAO dao;
 
     public EstadoService() {
         this.dao = new EstadoDAO(EntityManagerUtil.getEntityManager());
@@ -21,6 +21,6 @@ public class EstadoService implements IService<Estado, EstadoDAO>{
     }
 
     @Override public EstadoDAO getDAO() {
-        return null;
+        return dao;
     }
 }

@@ -12,14 +12,15 @@ import org.gabriel.academico.model.enums.TipoTelefone;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Enumerated;
+import java.util.StringJoiner;
 
 /**
  * @author daohn on 22/08/2020
  * @project EstudoDeCaso
  */
 @Embeddable @NoArgsConstructor @Getter
-@ToString @EqualsAndHashCode
-public class Telefone implements ValueObject {
+@EqualsAndHashCode
+public class Telefone {
     @NonNull  @Setter
     private String numero;
     @NonNull @Setter @Enumerated
@@ -29,5 +30,9 @@ public class Telefone implements ValueObject {
     public Telefone(String numero, TipoTelefone tipo) {
         this.numero = numero;
         this.tipo = tipo;
+    }
+
+    @Override public String toString() {
+        return numero;
     }
 }

@@ -1,5 +1,8 @@
 package org.gabriel.academico.app;
 
+import org.gabriel.academico.database.AbstractDAO;
+import org.gabriel.academico.database.DatabaseException;
+import org.gabriel.academico.database.EntityManagerUtil;
 import org.gabriel.academico.model.Aluno;
 import org.gabriel.academico.model.Curso;
 import org.gabriel.academico.model.Endereco;
@@ -7,6 +10,7 @@ import org.gabriel.academico.model.Estado;
 import org.gabriel.academico.model.Municipio;
 import org.gabriel.academico.model.Professor;
 import org.gabriel.academico.model.Telefone;
+import org.gabriel.academico.model.ValueObject;
 import org.gabriel.academico.model.enums.Sexo;
 import org.gabriel.academico.model.enums.TipoCurso;
 import org.gabriel.academico.model.enums.TipoLogradouro;
@@ -35,15 +39,20 @@ public class ValueObjectFactory {
     private static final MunicipioService municipioService = new MunicipioService();
     private static final EstadoService    estadoService    = new EstadoService();
 
-    public static void main(String[] args) throws ServiceException {
+    public static void main(String[] args) throws ServiceException, DatabaseException {
         create();
     }
 
-    public static void create() throws ServiceException {
-
+    public static void create() throws ServiceException, DatabaseException {
+        var abstractDao = new AbstractDAO<>(EntityManagerUtil.getEntityManager(),
+                                            ValueObject.class
+        );
         Curso[] cursos = createCursos();
-        Endereco[] enderecos = createEnderecos();
+        Estado[] estados = createEstados();
+        Municipio[] municipios = createMunicipios(estados);
+        Endereco[] enderecos = createEnderecos(municipios);
         Telefone[] telefones = createTelefones();
+
 
         var professor1 = Professor.builder()
                 .dataNascimento(LocalDate.now().minusYears(78))
@@ -63,16 +72,77 @@ public class ValueObjectFactory {
                 .sexo(Sexo.MASCULINO)
                 .build();
 
+
         professor1.addTelefone(telefones[0]);
         professor1.addCursos(asList(cursos[0], cursos[1], cursos[2]));
         aluno1.addTelefone(telefones[1]);
         aluno1.addCursos(asList(cursos[0], cursos[1]));
 
-//        alunoService.save(aluno1);
-        professorService.save(professor1);
+        abstractDao.begin()
+                .save(aluno1)
+                .save(professor1)
+                .save(asList(estados))
+                .save(asList(municipios))
+                .save(asList(cursos))
+                .commit();
+
     }
 
-    private static Curso[] createCursos() {
+    private static Estado[] createEstados() {
+        return new Estado[]{
+                Estado.builder()
+                        .nome("nome1")
+                        .sigla("sigla1")
+                        .build(),
+                Estado.builder()
+                        .nome("nome2")
+                        .sigla("sigla2")
+                        .build(),
+                Estado.builder()
+                        .nome("nome3")
+                        .sigla("sigla3")
+                        .build(),
+        };
+    }
+
+    private static Municipio[] createMunicipios(Estado[] estados) {
+        return new Municipio[]{
+                Municipio.builder()
+                        .estado(estados[0])
+                        .nome("municipio1")
+                        .build(),
+                Municipio.builder()
+                        .estado(estados[0])
+                        .nome("municipio2")
+                        .build(),
+                Municipio.builder()
+                        .estado(estados[0])
+                        .nome("municipio3")
+                        .build(),
+                Municipio.builder()
+                        .estado(estados[1])
+                        .nome("municipio4")
+                        .build(),
+                Municipio.builder()
+                        .estado(estados[1])
+                        .nome("municipio5")
+                        .build(),
+                Municipio.builder()
+                        .estado(estados[1])
+                        .nome("municipio6")
+                        .build(),
+                Municipio.builder()
+                        .estado(estados[2])
+                        .nome("municipio7")
+                        .build(),
+                Municipio.builder()
+                        .estado(estados[2])
+                        .nome("municipio8")
+                        .build(),
+        };
+    }
+
+    private static Curso[] createCursos() throws DatabaseException {
         return new Curso[]{
                 Curso.builder()
                         .nome("curso1")
@@ -89,47 +159,49 @@ public class ValueObjectFactory {
                 Curso.builder()
                         .nome("curso4")
                         .tipo(TipoCurso.POS_GRADUACAO)
+                        .build(),
+                Curso.builder()
+                        .nome("curso5")
+                        .tipo(TipoCurso.GRADUACAO)
+                        .build(),
+                Curso.builder()
+                        .nome("curso6")
+                        .tipo(TipoCurso.ENSINO_MEDIO)
+                        .build(),
+                Curso.builder()
+                        .nome("curso7")
+                        .tipo(TipoCurso.ENSINO_MEDIO)
                         .build()
         };
     }
 
-    private static Endereco[] createEnderecos() {
-
-        var estado1 = Estado.builder()
-                .nome("nome1")
-                .sigla("sigla1")
-                .build();
-        var municipio1 = Municipio.builder()
-                .estado(estado1)
-                .nome("municipio1")
-                .build();
-
+    private static Endereco[] createEnderecos(Municipio[] municipios) {
         return new Endereco[]{
                 Endereco.builder()
                         .bairro("bairro1")
                         .logradouro("logradouro1")
-                        .municipio(municipio1)
+                        .municipio(municipios[1])
                         .tipoLogradouro(TipoLogradouro.ALAMEDA)
                         .numero(1)
                         .build(),
                 Endereco.builder()
                         .bairro("bairro2")
                         .logradouro("logradouro2")
-                        .municipio(municipio1)
+                        .municipio(municipios[1])
                         .tipoLogradouro(TipoLogradouro.TRAVESSA)
                         .numero(2)
                         .build(),
                 Endereco.builder()
                         .bairro("bairro3")
                         .logradouro("logradouro3")
-                        .municipio(municipio1)
+                        .municipio(municipios[1])
                         .tipoLogradouro(TipoLogradouro.RUA)
                         .numero(3)
                         .build(),
                 Endereco.builder()
                         .bairro("bairro4")
                         .logradouro("logradouro4")
-                        .municipio(municipio1)
+                        .municipio(municipios[1])
                         .tipoLogradouro(TipoLogradouro.AVENIDA)
                         .numero(4)
                         .build(),

@@ -16,13 +16,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.util.StringJoiner;
 
 /**
  * @author daohn on 22/08/2020
  * @project EstudoDeCaso
  */
 @Entity @NoArgsConstructor @Getter
-@ToString @EqualsAndHashCode
+@EqualsAndHashCode
 public class Municipio implements ValueObject {
 
     @Id
@@ -30,12 +31,16 @@ public class Municipio implements ValueObject {
     private Integer id;
     @NonNull @Setter
     private String nome;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Estado estado;
 
     @Builder
     public Municipio(String nome, Estado estado) {
         this.nome = nome;
         this.estado = estado;
+    }
+
+    @Override public String toString() {
+        return nome;
     }
 }

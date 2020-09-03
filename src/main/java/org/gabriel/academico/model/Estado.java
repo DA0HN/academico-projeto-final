@@ -5,9 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,7 +17,7 @@ import javax.persistence.Id;
  * @project EstudoDeCaso
  */
 @Entity @NoArgsConstructor @Getter
-@ToString @EqualsAndHashCode
+@EqualsAndHashCode
 public class Estado implements ValueObject {
 
     @Id
@@ -34,5 +32,9 @@ public class Estado implements ValueObject {
     public Estado(String nome, String sigla) {
         this.nome = nome;
         this.sigla = sigla;
+    }
+
+    @Override public String toString() {
+        return nome;
     }
 }
